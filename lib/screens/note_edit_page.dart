@@ -99,31 +99,31 @@ class _NoteEditPageState extends State<NoteEditPage> {
                 fontFamily: 'Poppins',
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: _isPinned ? Colors.black : Colors.white,
+                color: _isPinned ? Colors.white : Colors.white,
               ),
               decoration: InputDecoration(
                 hintText: 'Note Title',
                 hintStyle: TextStyle(
-                  color: _isPinned ? Colors.black54 : Colors.white70,
+                  color: _isPinned ? Colors.white70 : Colors.white70,
                 ),
                 border: InputBorder.none,
               ),
             ),
-            Divider(color: _isPinned ? Colors.black26 : Colors.white24),
+            Divider(color: _isPinned ? Colors.white24 : Colors.white24),
             // Content field
             Expanded(
               child: TextField(
                 controller: _contentController,
                 style: TextStyle(
                   fontFamily: 'Poppins',
-                  color: _isPinned ? Colors.black : Colors.white,
+                  color: _isPinned ? Colors.white : Colors.white,
                 ),
                 maxLines: null,
                 expands: true,
                 decoration: InputDecoration(
                   hintText: 'Write your note here...',
                   hintStyle: TextStyle(
-                    color: _isPinned ? Colors.black54 : Colors.white70,
+                    color: _isPinned ? Colors.white54 : Colors.white70,
                   ),
                   border: InputBorder.none,
                 ),
