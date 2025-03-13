@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/notes_home_page.dart';
+import 'screens/main_page.dart';
 
 void main() {
   runApp(const NotesApp());
@@ -21,8 +21,9 @@ class NotesApp extends StatelessWidget {
           backgroundColor: Colors.black,
           elevation: 0,
         ),
+        // Dark gray for note widgets
         cardTheme: const CardTheme(
-          color: Color(0xFF212121), // Dark gray for note widgets
+          color: Color(0xFF212121), 
         ),
         textTheme: const TextTheme(
           bodyLarge: TextStyle(fontFamily: 'Poppins', color: Colors.white),
@@ -35,7 +36,7 @@ class NotesApp extends StatelessWidget {
           color: Colors.white,
         ),
       ),
-      home: const NotesHomePage(),
+      home: const MainPage(),
     );
   }
 } 

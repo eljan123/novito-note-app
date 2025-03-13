@@ -78,13 +78,24 @@ class _NotesHomePageState extends State<NotesHomePage> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
+        // Remove leading drawer menu button
         title: const Text(
           'Novito',
           style: TextStyle(
             fontFamily: 'Poppins',
+            fontSize: 30,
             color: Colors.white, 
           ),
         ),
+        // Add menu button to actions (top right)
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.menu, color: Colors.white),
+            onPressed: () {
+              Scaffold.of(context).openEndDrawer();
+            },
+          ),
+        ],
       ),
       body: notes.isEmpty
           ? const Center(
