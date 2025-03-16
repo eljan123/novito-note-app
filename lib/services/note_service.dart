@@ -17,6 +17,7 @@ class NoteService {
   // Edit a note
   void editNote(int index, Note updatedNote) {
     if (index >= 0 && index < _notes.length) {
+      updatedNote.lastModified = DateTime.now();
       _notes[index] = updatedNote;
     }
   }
@@ -25,6 +26,7 @@ class NoteService {
   void togglePinStatus(int index) {
     if (index >= 0 && index < _notes.length) {
       _notes[index].isPinned = !_notes[index].isPinned;
+      _notes[index].lastModified = DateTime.now();
     }
   }
 

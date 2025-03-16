@@ -3,6 +3,7 @@ import '../models/note.dart';
 import '../services/note_service.dart';
 import 'note_add_page.dart';
 import 'note_edit_page.dart';
+import 'dart:async';
 
 class NotesHomePage extends StatefulWidget {
   const NotesHomePage({super.key});
@@ -14,6 +15,22 @@ class NotesHomePage extends StatefulWidget {
 class _NotesHomePageState extends State<NotesHomePage> {
   // Create an instance of NoteService
   final NoteService _noteService = NoteService();
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Update the UI every minute to refresh relative timestamps
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   // Function to add a new note
   void _addNote() {
@@ -68,7 +85,7 @@ class _NotesHomePageState extends State<NotesHomePage> {
   Widget build(BuildContext context) {
     List<Note> notes = _noteService.getNotes();
     
-    // Sort notes: pinned notes first, then by index
+    // This will sort the notes: pinned notes first, then by index
     notes.sort((a, b) {
       if (a.isPinned && !b.isPinned) return -1;
       if (!a.isPinned && b.isPinned) return 1;
@@ -78,7 +95,6 @@ class _NotesHomePageState extends State<NotesHomePage> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        // Remove leading drawer menu button
         title: const Text(
           'Novito',
           style: TextStyle(
@@ -87,7 +103,7 @@ class _NotesHomePageState extends State<NotesHomePage> {
             color: Colors.white, 
           ),
         ),
-        // Add menu button to actions (top right)
+        // Add menu button to actions (para dito nakalagay yung notes pati to-do list)
         actions: [
           IconButton(
             icon: const Icon(Icons.menu, color: Colors.white),
@@ -124,14 +140,29 @@ class _NotesHomePageState extends State<NotesHomePage> {
                         color: notes[index].isPinned ? Colors.black : Colors.white,
                       ),
                     ),
-                    subtitle: Text(
-                      notes[index].content.isEmpty ? 'No content yet' : notes[index].content,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: 'Poppins', 
-                        color: notes[index].isPinned ? Colors.black54 : Colors.white70,
-                      ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          notes[index].content.isEmpty ? 'No content yet' : notes[index].content,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'Poppins', 
+                            color: notes[index].isPinned ? Colors.black54 : Colors.white70,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Last modified: ${_formatDateTime(notes[index].lastModified)}',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 12,
+                            color: notes[index].isPinned ? Colors.black38 : Colors.white38,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
                     ),
                     onTap: () => _editNote(index), // Edit note on tap
                     trailing: Row(
@@ -163,5 +194,27 @@ class _NotesHomePageState extends State<NotesHomePage> {
         child: const Icon(Icons.add, color: Colors.black),
       ),
     );
+  }
+
+  // Helper function to format DateTime
+  String _formatDateTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays == 0) {
+      if (difference.inHours == 0) {
+        if (difference.inMinutes == 0) {
+          return 'Just now';
+        }
+        return '${difference.inMinutes}m ago';
+      }
+      return '${difference.inHours}h ago';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    } else {
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    }
   }
 } 
