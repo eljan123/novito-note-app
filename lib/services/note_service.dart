@@ -26,7 +26,6 @@ class NoteService {
   void togglePinStatus(int index) {
     if (index >= 0 && index < _notes.length) {
       _notes[index].isPinned = !_notes[index].isPinned;
-      _notes[index].lastModified = DateTime.now();
     }
   }
 
