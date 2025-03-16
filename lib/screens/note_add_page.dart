@@ -54,7 +54,7 @@ class _NoteAddPageState extends State<NoteAddPage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.save, color: Colors.orange),
+            icon: const Icon(Icons.save_outlined, color: Colors.orange),
             onPressed: _saveNote,
           ),
         ],

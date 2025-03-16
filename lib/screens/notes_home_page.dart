@@ -12,14 +12,19 @@ class NotesHomePage extends StatefulWidget {
   State<NotesHomePage> createState() => _NotesHomePageState();
 }
 
-class _NotesHomePageState extends State<NotesHomePage> {
+class _NotesHomePageState extends State<NotesHomePage> with SingleTickerProviderStateMixin {
   // Create an instance of NoteService
   final NoteService _noteService = NoteService();
   Timer? _timer;
+  late AnimationController _animationController;
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
     // Update the UI every minute to refresh relative timestamps
     _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
       setState(() {});
@@ -29,6 +34,7 @@ class _NotesHomePageState extends State<NotesHomePage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -100,13 +106,14 @@ class _NotesHomePageState extends State<NotesHomePage> {
           style: TextStyle(
             fontFamily: 'Poppins',
             fontSize: 30,
+            fontWeight: FontWeight.w600,
             color: Colors.white, 
           ),
         ),
         // Add menu button to actions (para dito nakalagay yung notes pati to-do list)
         actions: [
           IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
+            icon: const Icon(Icons.menu_rounded, color: Colors.white),
             onPressed: () {
               Scaffold.of(context).openEndDrawer();
             },
@@ -114,84 +121,131 @@ class _NotesHomePageState extends State<NotesHomePage> {
         ],
       ),
       body: notes.isEmpty
-          ? const Center(
-              child: Text(
-                'No notes yet. Tap the + button to add one.',
-                style: TextStyle(fontFamily: 'Poppins', color: Colors.white70),
-                textAlign: TextAlign.center,
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.note_add_outlined,
+                    size: 64,
+                    // I used this to make the icon a bit more transparent
+                    // Instead of using withOpacity, ginamit ko withValues may problem kasi sa opacity idk why
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No notes yet.\nTap the + button to add one.',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 16,
+                      color: Colors.white
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             )
           : ListView.builder(
+              physics: const BouncingScrollPhysics(),
               itemCount: notes.length,
               itemBuilder: (context, index) {
-                return Card(
-                  color: notes[index].isPinned ? Colors.orange : const Color(0xFF212121),
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    title: Text(
-                      notes[index].title,
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.bold,
-                        color: notes[index].isPinned ? Colors.black : Colors.white,
+                return Hero(
+                  tag: 'note_${notes[index].title}',
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Card(
+                      elevation: notes[index].isPinned ? 4 : 2,
+                      color: notes[index].isPinned ? Colors.orange : const Color(0xFF212121),
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          notes[index].content.isEmpty ? 'No content yet' : notes[index].content,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: 'Poppins', 
-                            color: notes[index].isPinned ? Colors.black54 : Colors.white70,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(15),
+                        onTap: () => _editNote(index),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      notes[index].title,
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: notes[index].isPinned ? Colors.black : Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      notes[index].isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                                      color: notes[index].isPinned ? Colors.black : Colors.white70,
+                                      size: 22,
+                                    ),
+                                    onPressed: () => _togglePinStatus(index),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.delete,
+                                      color: notes[index].isPinned ? Colors.black54 : Colors.red,
+                                      size: 22,
+                                    ),
+                                    onPressed: () => _deleteNote(index),
+                                  ),
+                                ],
+                              ),
+                              if (notes[index].content.isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  notes[index].content,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 14,
+                                    height: 1.3,
+                                    color: notes[index].isPinned ? Colors.black54 : Colors.white70,
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 8),
+                              Text(
+                                'Last modified: ${_formatDateTime(notes[index].lastModified)}',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 11,
+                                  color: notes[index].isPinned ? Colors.black38 : Colors.white38,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Last modified: ${_formatDateTime(notes[index].lastModified)}',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 12,
-                            color: notes[index].isPinned ? Colors.black38 : Colors.white38,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ],
-                    ),
-                    onTap: () => _editNote(index), // Edit note on tap
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            notes[index].isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                            color: notes[index].isPinned ? Colors.black : Colors.white70,
-                          ),
-                          onPressed: () => _togglePinStatus(index),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.delete,
-                            color: notes[index].isPinned ? Colors.black54 : Colors.red,
-                          ),
-                          onPressed: () => _deleteNote(index),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.orange,
-        onPressed: _addNote,
-        child: const Icon(Icons.add, color: Colors.black),
+      floatingActionButton: TweenAnimationBuilder(
+        duration: const Duration(milliseconds: 300),
+        tween: Tween<double>(begin: 0.0, end: 1.0),
+        builder: (context, double value, child) {
+          return Transform.scale(
+            scale: value,
+            child: child,
+          );
+        },
+        child: FloatingActionButton(
+          backgroundColor: Colors.orange,
+          onPressed: _addNote,
+          child: const Icon(Icons.my_library_add, color: Colors.black),
+        ),
       ),
     );
   }

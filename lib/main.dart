@@ -21,20 +21,6 @@ class NotesApp extends StatelessWidget {
           backgroundColor: Colors.black,
           elevation: 0,
         ),
-        // Dark gray for note widgets
-        cardTheme: const CardTheme(
-          color: Color(0xFF212121), 
-        ),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(fontFamily: 'Poppins', color: Colors.white),
-          bodyMedium: TextStyle(fontFamily: 'Poppins', color: Colors.white70),
-        ),
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: Colors.orange,
-        ),
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-        ),
       ),
       home: const MainPage(),
     );
