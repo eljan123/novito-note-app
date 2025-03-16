@@ -12,19 +12,14 @@ class NotesHomePage extends StatefulWidget {
   State<NotesHomePage> createState() => _NotesHomePageState();
 }
 
-class _NotesHomePageState extends State<NotesHomePage> with SingleTickerProviderStateMixin {
+class _NotesHomePageState extends State<NotesHomePage> {
   // Create an instance of NoteService
   final NoteService _noteService = NoteService();
   Timer? _timer;
-  late AnimationController _animationController;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
     // Update the UI every minute to refresh relative timestamps
     _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
       setState(() {});
@@ -34,7 +29,6 @@ class _NotesHomePageState extends State<NotesHomePage> with SingleTickerProvider
   @override
   void dispose() {
     _timer?.cancel();
-    _animationController.dispose();
     super.dispose();
   }
 
@@ -128,9 +122,7 @@ class _NotesHomePageState extends State<NotesHomePage> with SingleTickerProvider
                   Icon(
                     Icons.note_add_outlined,
                     size: 64,
-                    // I used this to make the icon a bit more transparent
-                    // Instead of using withOpacity, ginamit ko withValues may problem kasi sa opacity idk why
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Colors.white.withOpacity(0.7),
                   ),
                   const SizedBox(height: 16),
                   Text(
