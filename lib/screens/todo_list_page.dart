@@ -113,89 +113,63 @@ class _TodoListPageState extends State<TodoListPage> with SingleTickerProviderSt
               physics: const BouncingScrollPhysics(),
               itemCount: todos.length,
               itemBuilder: (context, index) {
-                return TweenAnimationBuilder(
-                  duration: Duration(milliseconds: 300 + (index * 50)),
-                  tween: Tween<double>(begin: 0.0, end: 1.0),
-                  builder: (context, double value, child) {
-                    return Transform.translate(
-                      offset: Offset(0, 20 * (1 - value)),
-                      child: Opacity(
-                        opacity: value,
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: Card(
-                    elevation: 2,
-                    color: const Color(0xFF212121),
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(15),
-                      onTap: () => _toggleCompletionStatus(index),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        child: Row(
-                          children: [
-                            ScaleTransition(
-                              scale: CurvedAnimation(
-                                parent: _animationController,
-                                curve: Curves.elasticOut,
-                              ),
-                              child: Transform.scale(
-                                scale: 1.1,
-                                child: Checkbox(
-                                  value: todos[index].isCompleted,
-                                  onChanged: (_) => _toggleCompletionStatus(index),
-                                  activeColor: Colors.orange,
-                                  checkColor: Colors.black,
-                                  side: const BorderSide(
-                                    color: Colors.orange,
-                                    width: 1.5,
-                                  ),
-                                  fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
-                                    if (states.contains(WidgetState.selected)) {
-                                      return Colors.orange;
-                                    }
-                                    return Colors.transparent;
-                                  }),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                todos[index].task,
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 16,
-                                  height: 1.3,
-                                  fontWeight: todos[index].isCompleted ? FontWeight.normal : FontWeight.w500,
-                                  color: todos[index].isCompleted 
-                                      ? Colors.white
-                                      : Colors.white,
-                                  decoration: todos[index].isCompleted 
-                                      ? TextDecoration.lineThrough
-                                      : null,
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.delete,
-                                color: Colors.red,
-                                size: 22,
-                              ),
-                              onPressed: () => _deleteTodo(index),
-                            ),
-                          ],
+                return Card(
+                  elevation: 2,
+                  color: const Color(0xFF212121),
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Row(
+                      children: [
+                        Checkbox(
+                          value: todos[index].isCompleted,
+                          onChanged: (_) => _toggleCompletionStatus(index),
+                          activeColor: Colors.orange,
+                          checkColor: Colors.black,
+                          side: const BorderSide(
+                            color: Colors.orange,
+                            width: 1.5,
+                          ),
+                          fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+                            if (states.contains(WidgetState.selected)) {
+                              return Colors.orange;
+                            }
+                            return Colors.transparent;
+                          }),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            todos[index].task,
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 16,
+                              height: 1.3,
+                              fontWeight: todos[index].isCompleted ? FontWeight.normal : FontWeight.w500,
+                              color: todos[index].isCompleted 
+                                  ? Colors.white
+                                  : Colors.white,
+                              decoration: todos[index].isCompleted 
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                            size: 22,
+                          ),
+                          onPressed: () => _deleteTodo(index),
+                        ),
+                      ],
                     ),
                   ),
                 );

@@ -13,9 +13,8 @@ class NotesHomePage extends StatefulWidget {
 }
 
 class _NotesHomePageState extends State<NotesHomePage> {
-  // Create an instance of NoteService
   final NoteService _noteService = NoteService();
-  Timer? _timer;
+  Timer _timer = Timer(Duration.zero, () {});
 
   @override
   void initState() {
@@ -28,7 +27,7 @@ class _NotesHomePageState extends State<NotesHomePage> {
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _timer.cancel();
     super.dispose();
   }
 
@@ -85,7 +84,7 @@ class _NotesHomePageState extends State<NotesHomePage> {
   Widget build(BuildContext context) {
     List<Note> notes = _noteService.getNotes();
     
-    // This will sort the notes: pinned notes first, then by index
+    // This will sort the notes... pinned notes first, then by index
     notes.sort((a, b) {
       if (a.isPinned && !b.isPinned) return -1;
       if (!a.isPinned && b.isPinned) return 1;
@@ -122,7 +121,7 @@ class _NotesHomePageState extends State<NotesHomePage> {
                   Icon(
                     Icons.note_add_outlined,
                     size: 64,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -146,7 +145,6 @@ class _NotesHomePageState extends State<NotesHomePage> {
                   child: Material(
                     type: MaterialType.transparency,
                     child: Card(
-                      elevation: notes[index].isPinned ? 4 : 2,
                       color: notes[index].isPinned ? Colors.orange : const Color(0xFF212121),
                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                       shape: RoundedRectangleBorder(
