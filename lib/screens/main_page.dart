@@ -1,4 +1,3 @@
-// This is for the menu bar
 import 'package:flutter/material.dart';
 import 'notes_home_page.dart';
 import 'todo_list_page.dart';
