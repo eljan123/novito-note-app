@@ -150,6 +150,10 @@ class _NotesHomePageState extends State<NotesHomePage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
+
+                      // Ginamit ko yung InkWell para kahit anong part ng widget mo i-tap
+                      // Ma c-click yung note tapos pwede na mag edit non
+                      // Unang option ko kasi yung GestureDetector sana pero mas maganda yung InkWell
                       child: InkWell(
                         borderRadius: BorderRadius.circular(15),
                         onTap: () => _editNote(index),
