@@ -94,7 +94,7 @@ class _TodoListPageState extends State<TodoListPage> with SingleTickerProviderSt
                   Icon(
                     Icons.task_outlined,
                     size: 64,
-                    color: Colors.white,
+                    color: Colors.white.withValues(alpha: 0.6),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -151,7 +151,7 @@ class _TodoListPageState extends State<TodoListPage> with SingleTickerProviderSt
                               fontFamily: 'Poppins',
                               fontSize: 16,
                               height: 1.3,
-                              fontWeight: todos[index].isCompleted ? FontWeight.normal : FontWeight.w500,
+                              fontWeight: FontWeight.normal,
                               color: todos[index].isCompleted 
                                   ? Colors.white
                                   : Colors.white,
