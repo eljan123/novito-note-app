@@ -94,7 +94,7 @@ class _TodoListPageState extends State<TodoListPage> with SingleTickerProviderSt
                   Icon(
                     Icons.task_outlined,
                     size: 64,
-                    color: Colors.white,
+                    color: Colors.white.withValues(alpha: 0.6),
                   ),
                   const SizedBox(height: 16),
                   Text(
