@@ -151,7 +151,7 @@ class _TodoListPageState extends State<TodoListPage> with SingleTickerProviderSt
                               fontFamily: 'Poppins',
                               fontSize: 16,
                               height: 1.3,
-                              fontWeight: todos[index].isCompleted ? FontWeight.normal : FontWeight.w500,
+                              fontWeight: FontWeight.normal,
                               color: todos[index].isCompleted 
                                   ? Colors.white
                                   : Colors.white,
