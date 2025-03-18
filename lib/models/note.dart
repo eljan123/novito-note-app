@@ -3,11 +3,13 @@ class Note {
   String content;
   bool isPinned;
   DateTime lastModified;
+  String folder;
 
   Note({
     required this.title, 
     this.content = '', 
     this.isPinned = false,
+    this.folder = 'Default',
     DateTime? lastModified,
   }) : lastModified = lastModified ?? DateTime.now();
 
@@ -17,6 +19,7 @@ class Note {
       'title': title,
       'content': content,
       'isPinned': isPinned,
+      'folder': folder,
       'lastModified': lastModified.toIso8601String(),
     };
   }
@@ -27,6 +30,7 @@ class Note {
       title: map['title'] ?? '',
       content: map['content'] ?? '',
       isPinned: map['isPinned'] ?? false,
+      folder: map['folder'] ?? 'Default',
       lastModified: map['lastModified'] != null 
           ? DateTime.parse(map['lastModified'])
           : DateTime.now(),
