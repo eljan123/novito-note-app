@@ -12,7 +12,7 @@ class NotesHomePage extends StatefulWidget {
   State<NotesHomePage> createState() => _NotesHomePageState();
 }
 
-class _NotesHomePageState extends State<NotesHomePage> {
+class _NotesHomePageState extends State<NotesHomePage> with SingleTickerProviderStateMixin {
   final NoteService _noteService = NoteService();
   Timer _timer = Timer(Duration.zero, () {});
 
@@ -44,7 +44,7 @@ class _NotesHomePageState extends State<NotesHomePage> {
           },
         ),
       ),
-    );
+    ).then((_) => setState(() {}));
   }
 
   // Function to edit a note
@@ -63,7 +63,7 @@ class _NotesHomePageState extends State<NotesHomePage> {
           },
         ),
       ),
-    );
+    ).then((_) => setState(() {}));
   }
 
   // Function to toggle pin status
@@ -80,15 +80,37 @@ class _NotesHomePageState extends State<NotesHomePage> {
     });
   }
 
+  // Helper function to format DateTime
+  String _formatDateTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays == 0) {
+      if (difference.inHours == 0) {
+        if (difference.inMinutes == 0) {
+          return 'Just now';
+        }
+        return '${difference.inMinutes}m ago';
+      }
+      return '${difference.inHours}h ago';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    } else {
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Note> notes = _noteService.getNotes();
     
-    // This will sort the notes... pinned notes first, then by index
+    // This will sort the notes... pinned notes first, then by most recent
     notes.sort((a, b) {
       if (a.isPinned && !b.isPinned) return -1;
       if (!a.isPinned && b.isPinned) return 1;
-      return 0;
+      return b.lastModified.compareTo(a.lastModified); // Most recent first
     });
     
     return Scaffold(
@@ -103,7 +125,7 @@ class _NotesHomePageState extends State<NotesHomePage> {
             color: Colors.white, 
           ),
         ),
-        // Add menu button to actions (para dito nakalagay yung notes pati to-do list)
+        // Add menu button to actions
         actions: [
           IconButton(
             icon: const Icon(Icons.menu_rounded, color: Colors.white),
@@ -150,10 +172,6 @@ class _NotesHomePageState extends State<NotesHomePage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
-
-                      // Ginamit ko yung InkWell para kahit anong part ng widget mo i-tap
-                      // Ma c-click yung note tapos pwede na mag edit non
-                      // Unang option ko kasi yung GestureDetector sana pero mas maganda yung InkWell
                       child: InkWell(
                         borderRadius: BorderRadius.circular(15),
                         onTap: () => _editNote(index),
@@ -175,6 +193,35 @@ class _NotesHomePageState extends State<NotesHomePage> {
                                       ),
                                     ),
                                   ),
+                                  // Show folder indicator
+                                  if (notes[index].folder != 'Default') ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: notes[index].isPinned ? Colors.black12 : Colors.orange.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.folder,
+                                            size: 14,
+                                            color: notes[index].isPinned ? Colors.black54 : Colors.orange,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            notes[index].folder,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: notes[index].isPinned ? Colors.black54 : Colors.orange,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ],
                                   IconButton(
                                     icon: Icon(
                                       notes[index].isPinned ? Icons.push_pin : Icons.push_pin_outlined,
@@ -226,43 +273,11 @@ class _NotesHomePageState extends State<NotesHomePage> {
                 );
               },
             ),
-      floatingActionButton: TweenAnimationBuilder(
-        duration: const Duration(milliseconds: 300),
-        tween: Tween<double>(begin: 0.0, end: 1.0),
-        builder: (context, double value, child) {
-          return Transform.scale(
-            scale: value,
-            child: child,
-          );
-        },
-        child: FloatingActionButton(
-          backgroundColor: Colors.orange,
-          onPressed: _addNote,
-          child: const Icon(Icons.my_library_add, color: Colors.black),
-        ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.orange,
+        onPressed: _addNote,
+        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
-  }
-
-  // Helper function to format DateTime
-  String _formatDateTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-
-    if (difference.inDays == 0) {
-      if (difference.inHours == 0) {
-        if (difference.inMinutes == 0) {
-          return 'Just now';
-        }
-        return '${difference.inMinutes}m ago';
-      }
-      return '${difference.inHours}h ago';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
-    } else {
-      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
-    }
   }
 } 
