@@ -22,12 +22,16 @@ class _TodoAddPageState extends State<TodoAddPage> {
     super.dispose();
   }
 
-  void _saveTodo() {
+  void _saveTodo() async {
     if (_taskController.text.isNotEmpty) {
       final newTodo = Todo(
         task: _taskController.text,
       );
-      widget.onAdd(newTodo);
+      await widget.onAdd(newTodo);
+      
+      // Check if widget is still mounted before navigation
+      if (!mounted) return;
+      
       Navigator.pop(context);
     } else {
       // Show error if task is empty
