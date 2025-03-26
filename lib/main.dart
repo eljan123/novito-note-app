@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'screens/main_page.dart';
+import 'databases/database_manager.dart';
 
-void main() {
+void main() async {
+  // Ensure Flutter bindings are initialized before accessing platform channels
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize our database
+  await DatabaseManager.instance.initializeAll();
+  
   runApp(const NotesApp());
 }
 

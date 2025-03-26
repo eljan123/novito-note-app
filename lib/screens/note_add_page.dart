@@ -29,18 +29,25 @@ class _NoteAddPageState extends State<NoteAddPage> {
     super.dispose();
   }
 
-  void _saveNote() {
+  // Helper method to safely get a ScaffoldMessenger even after async gaps
+  ScaffoldMessengerState _getScaffoldMessenger() {
+    assert(mounted, 'Cannot use BuildContext when widget is not mounted');
+    return ScaffoldMessenger.of(context);
+  }
+
+  void _saveNote() async {
     if (_titleController.text.isNotEmpty) {
       final newNote = Note(
         title: _titleController.text,
         content: _contentController.text,
         folder: _selectedFolder,
       );
-      widget.onAdd(newNote);
+      await widget.onAdd(newNote);
+      if (!mounted) return;
       Navigator.pop(context);
     } else {
       // Show error if title is empty
-      ScaffoldMessenger.of(context).showSnackBar(
+      _getScaffoldMessenger().showSnackBar(
         const SnackBar(content: Text('Title cannot be empty')),
       );
     }
@@ -105,12 +112,13 @@ class _NoteAddPageState extends State<NoteAddPage> {
   }
   
   // Show dialog to create a new folder
-  void _showNewFolderDialog() {
+  void _showNewFolderDialog() async {
     final TextEditingController folderNameController = TextEditingController();
+    final capturedContext = context;
     
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
+    await showDialog<void>(
+      context: capturedContext,
+      builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: const Color(0xFF303030),
           title: const Text(
@@ -129,20 +137,22 @@ class _NoteAddPageState extends State<NoteAddPage> {
             TextButton(
               child: const Text('Cancel'),
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
               },
             ),
             TextButton(
               child: const Text('Create'),
               onPressed: () {
                 if (folderNameController.text.isNotEmpty) {
-                  // Create new folder and select it
+                  // Create new folder and select it, then close dialog
                   final newFolder = Folder(name: folderNameController.text);
                   _noteService.addFolder(newFolder);
-                  setState(() {
-                    _selectedFolder = newFolder.name;
-                  });
-                  Navigator.pop(context);
+                  
+                  // Store for use outside dialog
+                  _pendingFolderSelection = newFolder.name;
+                  
+                  // Close dialog
+                  Navigator.pop(dialogContext);
                 }
               },
             ),
@@ -150,7 +160,21 @@ class _NoteAddPageState extends State<NoteAddPage> {
         );
       },
     );
+    
+    // After dialog closes, update the state if needed
+    if (!mounted) return;
+    
+    // Apply the pending folder selection if it was set
+    if (_pendingFolderSelection != null) {
+      setState(() {
+        _selectedFolder = _pendingFolderSelection!;
+        _pendingFolderSelection = null;
+      });
+    }
   }
+
+  // Temporary storage for folder selection between dialog and state update
+  String? _pendingFolderSelection;
 
   @override
   Widget build(BuildContext context) {

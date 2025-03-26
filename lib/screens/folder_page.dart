@@ -33,16 +33,23 @@ class _FolderPageState extends State<FolderPage> {
   // This keeps track of which folder is currently selected
   String _selectedFolder = 'Default';
 
+  // Helper method to safely get a ScaffoldMessenger even after async gaps
+  ScaffoldMessengerState _getScaffoldMessenger() {
+    assert(mounted, 'Cannot use BuildContext when widget is not mounted');
+    return ScaffoldMessenger.of(context);
+  }
+
   // ===== FOLDER MANAGEMENT METHODS =====
   // These methods handle creating, renaming, and deleting folders
 
   // Create a new folder with a dialog
-  void _addFolder() {
+  void _addFolder() async {
     final TextEditingController folderNameController = TextEditingController();
+    final capturedContext = context;
     
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
+    await showDialog<void>(
+      context: capturedContext,
+      builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: const Color(0xFF303030),
           title: const Text(
@@ -61,17 +68,16 @@ class _FolderPageState extends State<FolderPage> {
             TextButton(
               child: const Text('Cancel'),
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
               },
             ),
             TextButton(
               child: const Text('Create'),
               onPressed: () {
                 if (folderNameController.text.isNotEmpty) {
-                  setState(() {
-                    _noteService.addFolder(Folder(name: folderNameController.text));
-                  });
-                  Navigator.pop(context);
+                  // Create folder and close dialog - no async operation inside dialog
+                  _noteService.addFolder(Folder(name: folderNameController.text));
+                  Navigator.pop(dialogContext);
                 }
               },
             ),
@@ -79,6 +85,10 @@ class _FolderPageState extends State<FolderPage> {
         );
       },
     );
+    
+    // UI update after dialog is closed
+    if (!mounted) return;
+    setState(() {});
   }
   
   // Delete a folder after confirmation
@@ -86,7 +96,8 @@ class _FolderPageState extends State<FolderPage> {
     // Can't delete Default folder - add a friendly check
     if (folderName == 'Default') {
       // Show a simple message explaining why Default can't be deleted
-      ScaffoldMessenger.of(context).showSnackBar(
+      final scaffoldMessenger = _getScaffoldMessenger();
+      scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('The Default folder cannot be deleted.'),
           backgroundColor: Colors.red,
@@ -96,10 +107,13 @@ class _FolderPageState extends State<FolderPage> {
       return;
     }
 
+    // Store the BuildContext in a local variable before async operation
+    final buildContext = context;
+    
     // Confirm before deleting
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
+    showDialog<void>(
+      context: buildContext,
+      builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: const Color(0xFF303030),
           title: const Text(
@@ -114,32 +128,43 @@ class _FolderPageState extends State<FolderPage> {
             TextButton(
               child: const Text('Cancel'),
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
               },
             ),
             TextButton(
               child: const Text('Delete', style: TextStyle(color: Colors.red)),
-              onPressed: () {
-                // Count how many notes will be moved
-                int notesToMove = _noteService.getNotesByFolder(folderName).length;
+              onPressed: () async {
+                // Save data we need for the message
+                final int notesToMove = _noteService.getNotesByFolder(folderName).length;
+                final String folderNameCopy = folderName;
+                
+                // Close dialog first using the captured context
+                Navigator.pop(dialogContext);
                 
                 // Do the actual deletion
+                await _noteService.deleteFolder(folderNameCopy);
+                
+                // Check if widget is still mounted before updating UI
+                if (!mounted) return;
+                
+                // Update the UI
                 setState(() {
-                  _noteService.deleteFolder(folderName);
-                  if (_selectedFolder == folderName) {
+                  if (_selectedFolder == folderNameCopy) {
                     _selectedFolder = 'Default';
                   }
                 });
                 
-                Navigator.pop(context);
-                
                 // Show feedback message
-                String message = 'Folder "$folderName" deleted.';
+                String message = 'Folder "$folderNameCopy" deleted.';
                 if (notesToMove > 0) {
                   message += ' $notesToMove note${notesToMove == 1 ? '' : 's'} moved to Default folder.';
                 }
                 
-                ScaffoldMessenger.of(context).showSnackBar(
+                // Get a new scaffoldMessenger as we're after an async gap
+                if (!mounted) return;
+                
+                final currentScaffoldMessenger = _getScaffoldMessenger();
+                currentScaffoldMessenger.showSnackBar(
                   SnackBar(
                     content: Text(message),
                     backgroundColor: Colors.green,
@@ -158,7 +183,8 @@ class _FolderPageState extends State<FolderPage> {
   void _showFolderOptions(Folder folder) {
     if (folder.name == 'Default') {
       // Can't delete Default folder
-      ScaffoldMessenger.of(context).showSnackBar(
+      final scaffoldMessenger = _getScaffoldMessenger();
+      scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('The Default folder cannot be modified or deleted.'),
           backgroundColor: Colors.blue,
@@ -286,10 +312,11 @@ class _FolderPageState extends State<FolderPage> {
   }
   
   // Helper method to perform the actual rename operation
-  void _performRename(Folder folder, String newName) {
+  void _performRename(Folder folder, String newName) async {
     // Handle empty name
     if (newName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      final scaffoldMessenger = _getScaffoldMessenger();
+      scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('Folder name cannot be empty'),
           backgroundColor: Colors.red,
@@ -315,7 +342,8 @@ class _FolderPageState extends State<FolderPage> {
     
     if (folderExists) {
       // Show error for duplicate folder name
-      ScaffoldMessenger.of(context).showSnackBar(
+      final scaffoldMessenger = _getScaffoldMessenger();
+      scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('A folder with this name already exists'),
           backgroundColor: Colors.red,
@@ -324,32 +352,44 @@ class _FolderPageState extends State<FolderPage> {
       return;
     }
     
+    // Save old folder name in case we need it later
+    final String oldFolderName = folder.name;
+    
+    // Close the dialog first
+    Navigator.pop(context);
+    
     // All checks passed, do the rename
-    setState(() {
-      // Create new folder with new name
-      final newFolder = Folder(name: newName);
-      _noteService.addFolder(newFolder);
-      
-      // Move notes from old to new folder
-      List<Note> notes = _noteService.getNotesByFolder(folder.name);
-      for (var note in notes) {
-        note.folder = newFolder.name;
+    // Create new folder with new name
+    final newFolder = Folder(name: newName);
+    await _noteService.addFolder(newFolder);
+    
+    // Get notes from old folder
+    List<Note> notes = _noteService.getNotesByFolder(oldFolderName);
+    
+    // Move notes to new folder - done one by one to ensure database updates
+    for (var note in notes) {
+      note.folder = newName;
+      if (note.id != null) {
+        await _noteService.editNote(_noteService.getNotes().indexOf(note), note);
       }
-      
-      // Delete old folder
-      _noteService.deleteFolder(folder.name);
-      
-      // Update selected folder if needed
-      if (_selectedFolder == folder.name) {
-        _selectedFolder = newFolder.name;
+    }
+    
+    // Delete old folder
+    await _noteService.deleteFolder(oldFolderName);
+    
+    // Check if widget is still mounted
+    if (!mounted) return;
+    
+    // Update selected folder if needed
+    setState(() {
+      if (_selectedFolder == oldFolderName) {
+        _selectedFolder = newName;
       }
     });
     
-    // Close the dialog
-    Navigator.pop(context);
-    
     // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
+    final scaffoldMessenger = _getScaffoldMessenger();
+    scaffoldMessenger.showSnackBar(
       SnackBar(
         content: Text('Folder renamed to "$newName"'),
         backgroundColor: Colors.green,
@@ -361,46 +401,57 @@ class _FolderPageState extends State<FolderPage> {
   // These methods handle adding, editing, and deleting notes
 
   // Add a new note to the current folder
-  void _addNote() {
-    Navigator.push(
+  void _addNote() async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => NoteAddPage(
-          onAdd: (Note newNote) {
+          onAdd: (Note newNote) async {
             // Make sure it's added to the current folder
             newNote.folder = _selectedFolder;
-            setState(() {
-              _noteService.addNote(newNote);
-            });
+            await _noteService.addNote(newNote);
           },
         ),
       ),
-    ).then((_) => setState(() {}));
+    );
+    
+    // Check if widget is still mounted before updating state
+    if (!mounted) return;
+    
+    // Refresh UI
+    setState(() {});
   }
 
   // Edit an existing note (opens note edit page)
-  void _editNote(int index, Note note) {
-    Navigator.push(
+  void _editNote(int index, Note note) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => NoteEditPage(
           note: note,
           index: index,
-          onSave: (int idx, Note updatedNote) {
-            setState(() {
-              _noteService.editNote(idx, updatedNote);
-            });
+          onSave: (int idx, Note updatedNote) async {
+            await _noteService.editNote(idx, updatedNote);
           },
         ),
       ),
-    ).then((_) => setState(() {}));
+    );
+    
+    // Check if widget is still mounted before updating state
+    if (!mounted) return;
+    
+    // Refresh UI
+    setState(() {});
   }
 
   // Function to toggle pin status
-  void _togglePinStatus(int index) {
-    setState(() {
-      _noteService.togglePinStatus(index);
-    });
+  void _togglePinStatus(int index) async {
+    await _noteService.togglePinStatus(index);
+    
+    // Check if widget is still mounted before updating state
+    if (!mounted) return;
+    
+    setState(() {});
   }
 
   // Function to delete a note
@@ -408,10 +459,13 @@ class _FolderPageState extends State<FolderPage> {
     // Get the actual note to display its title
     Note noteToDelete = _noteService.getNotes()[index];
     
+    // Store the BuildContext in a local variable before async operation
+    final buildContext = context;
+    
     // Show confirmation dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
+    showDialog<void>(
+      context: buildContext,
+      builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: const Color(0xFF303030),
           title: const Text(
@@ -426,29 +480,41 @@ class _FolderPageState extends State<FolderPage> {
             TextButton(
               child: const Text('Cancel'),
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
               },
             ),
             TextButton(
               child: const Text('Delete', style: TextStyle(color: Colors.red)),
-              onPressed: () {
-                setState(() {
-                  _noteService.deleteNote(index);
-                });
-                Navigator.pop(context);
+              onPressed: () async {
+                // Store title before closing dialog
+                final String noteTitle = noteToDelete.title;
                 
-                // Show confirmation
-                ScaffoldMessenger.of(context).showSnackBar(
+                // Close dialog first using the captured context
+                Navigator.pop(dialogContext);
+                
+                // Delete the note
+                await _noteService.deleteNote(index);
+                
+                // Check if widget is still mounted before updating UI
+                if (!mounted) return;
+                
+                // Update UI
+                setState(() {});
+                
+                // Get a new scaffoldMessenger as we're after an async gap
+                if (!mounted) return;
+                
+                final currentScaffoldMessenger = _getScaffoldMessenger();
+                currentScaffoldMessenger.showSnackBar(
                   SnackBar(
-                    content: Text('Note "${noteToDelete.title}" deleted'),
+                    content: Text('Note "$noteTitle" deleted'),
                     backgroundColor: Colors.red,
                     duration: const Duration(seconds: 2),
                     action: SnackBarAction(
                       label: 'OK',
                       textColor: Colors.white,
                       onPressed: () {
-                        // Dismiss the snackbar
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        currentScaffoldMessenger.hideCurrentSnackBar();
                       },
                     ),
                   ),
@@ -516,8 +582,8 @@ class _FolderPageState extends State<FolderPage> {
           IconButton(
             icon: const Icon(Icons.menu_rounded, color: Colors.white),
             onPressed: () {
-              // Open the end drawer
-              Scaffold.of(context).openEndDrawer();
+              final scaffold = Scaffold.of(context);
+              scaffold.openEndDrawer();
             },
           ),
         ],
