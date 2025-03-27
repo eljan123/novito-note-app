@@ -10,28 +10,17 @@ class TodoListPage extends StatefulWidget {
   State<TodoListPage> createState() => _TodoListPageState();
 }
 
-class _TodoListPageState extends State<TodoListPage> with SingleTickerProviderStateMixin {
+class _TodoListPageState extends State<TodoListPage> {
   final TodoService _todoService = TodoService();
-  late AnimationController _animationController;
   
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
     
     // No need to load from database anymore
     setState(() {
       _isLoading = false;
     });
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 
   // Function to add a new todo
@@ -54,11 +43,9 @@ class _TodoListPageState extends State<TodoListPage> with SingleTickerProviderSt
     setState(() {});
   }
 
-  // Function to toggle completion status with animation
+  // Function to toggle completion status
   void _toggleCompletionStatus(int index) async {
-    await _animationController.forward(from: 0.0);
-    
-    // Now perform the actual toggle
+    // Now perform the toggle
     await _todoService.toggleCompletionStatus(index);
     
     // Check if widget is still mounted before updating state
@@ -203,20 +190,10 @@ class _TodoListPageState extends State<TodoListPage> with SingleTickerProviderSt
                     );
                   },
                 ),
-      floatingActionButton: TweenAnimationBuilder(
-        duration: const Duration(milliseconds: 300),
-        tween: Tween<double>(begin: 0.0, end: 1.0),
-        builder: (context, double value, child) {
-          return Transform.scale(
-            scale: value,
-            child: child,
-          );
-        },
-        child: FloatingActionButton(
-          backgroundColor: Colors.orange,
-          onPressed: _addTodo,
-          child: const Icon(Icons.add, color: Colors.black),
-        ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.orange,
+        onPressed: _addTodo,
+        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }

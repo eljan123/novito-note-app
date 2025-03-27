@@ -33,12 +33,6 @@ class _FolderPageState extends State<FolderPage> {
   // This keeps track of which folder is currently selected
   String _selectedFolder = 'Default';
 
-  // Helper method to safely get a ScaffoldMessenger even after async gaps
-  ScaffoldMessengerState _getScaffoldMessenger() {
-    assert(mounted, 'Cannot use BuildContext when widget is not mounted');
-    return ScaffoldMessenger.of(context);
-  }
-
   // ===== FOLDER MANAGEMENT METHODS =====
   // These methods handle creating, renaming, and deleting folders
 
@@ -95,15 +89,7 @@ class _FolderPageState extends State<FolderPage> {
   void _deleteFolder(String folderName) {
     // Can't delete Default folder - add a friendly check
     if (folderName == 'Default') {
-      // Show a simple message explaining why Default can't be deleted
-      final scaffoldMessenger = _getScaffoldMessenger();
-      scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Text('The Default folder cannot be deleted.'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      // Just return silently instead of showing a message
       return;
     }
 
@@ -134,43 +120,21 @@ class _FolderPageState extends State<FolderPage> {
             TextButton(
               child: const Text('Delete', style: TextStyle(color: Colors.red)),
               onPressed: () async {
-                // Save data we need for the message
-                final int notesToMove = _noteService.getNotesByFolder(folderName).length;
-                final String folderNameCopy = folderName;
-                
                 // Close dialog first using the captured context
                 Navigator.pop(dialogContext);
                 
                 // Do the actual deletion
-                await _noteService.deleteFolder(folderNameCopy);
+                await _noteService.deleteFolder(folderName);
                 
                 // Check if widget is still mounted before updating UI
                 if (!mounted) return;
                 
                 // Update the UI
                 setState(() {
-                  if (_selectedFolder == folderNameCopy) {
+                  if (_selectedFolder == folderName) {
                     _selectedFolder = 'Default';
                   }
                 });
-                
-                // Show feedback message
-                String message = 'Folder "$folderNameCopy" deleted.';
-                if (notesToMove > 0) {
-                  message += ' $notesToMove note${notesToMove == 1 ? '' : 's'} moved to Default folder.';
-                }
-                
-                // Get a new scaffoldMessenger as we're after an async gap
-                if (!mounted) return;
-                
-                final currentScaffoldMessenger = _getScaffoldMessenger();
-                currentScaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text(message),
-                    backgroundColor: Colors.green,
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
               },
             ),
           ],
@@ -182,15 +146,7 @@ class _FolderPageState extends State<FolderPage> {
   // Show options when long-pressing a folder
   void _showFolderOptions(Folder folder) {
     if (folder.name == 'Default') {
-      // Can't delete Default folder
-      final scaffoldMessenger = _getScaffoldMessenger();
-      scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Text('The Default folder cannot be modified or deleted.'),
-          backgroundColor: Colors.blue,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      // Can't modify Default folder - just return silently
       return;
     }
     
@@ -315,13 +271,7 @@ class _FolderPageState extends State<FolderPage> {
   void _performRename(Folder folder, String newName) async {
     // Handle empty name
     if (newName.isEmpty) {
-      final scaffoldMessenger = _getScaffoldMessenger();
-      scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Text('Folder name cannot be empty'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      Navigator.pop(context);
       return;
     }
     
@@ -341,14 +291,7 @@ class _FolderPageState extends State<FolderPage> {
     }
     
     if (folderExists) {
-      // Show error for duplicate folder name
-      final scaffoldMessenger = _getScaffoldMessenger();
-      scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Text('A folder with this name already exists'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      Navigator.pop(context);
       return;
     }
     
@@ -386,15 +329,6 @@ class _FolderPageState extends State<FolderPage> {
         _selectedFolder = newName;
       }
     });
-    
-    // Show success message
-    final scaffoldMessenger = _getScaffoldMessenger();
-    scaffoldMessenger.showSnackBar(
-      SnackBar(
-        content: Text('Folder renamed to "$newName"'),
-        backgroundColor: Colors.green,
-      ),
-    );
   }
 
   // ===== NOTE MANAGEMENT METHODS =====
@@ -486,9 +420,6 @@ class _FolderPageState extends State<FolderPage> {
             TextButton(
               child: const Text('Delete', style: TextStyle(color: Colors.red)),
               onPressed: () async {
-                // Store title before closing dialog
-                final String noteTitle = noteToDelete.title;
-                
                 // Close dialog first using the captured context
                 Navigator.pop(dialogContext);
                 
@@ -500,25 +431,6 @@ class _FolderPageState extends State<FolderPage> {
                 
                 // Update UI
                 setState(() {});
-                
-                // Get a new scaffoldMessenger as we're after an async gap
-                if (!mounted) return;
-                
-                final currentScaffoldMessenger = _getScaffoldMessenger();
-                currentScaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text('Note "$noteTitle" deleted'),
-                    backgroundColor: Colors.red,
-                    duration: const Duration(seconds: 2),
-                    action: SnackBarAction(
-                      label: 'OK',
-                      textColor: Colors.white,
-                      onPressed: () {
-                        currentScaffoldMessenger.hideCurrentSnackBar();
-                      },
-                    ),
-                  ),
-                );
               },
             ),
           ],
@@ -757,20 +669,10 @@ class _FolderPageState extends State<FolderPage> {
           ),
         ],
       ),
-      floatingActionButton: TweenAnimationBuilder(
-        duration: const Duration(milliseconds: 300),
-        tween: Tween<double>(begin: 0.0, end: 1.0),
-        builder: (context, double value, child) {
-          return Transform.scale(
-            scale: value,
-            child: child,
-          );
-        },
-        child: FloatingActionButton(
-          backgroundColor: Colors.orange,
-          onPressed: _addNote,
-          child: const Icon(Icons.add, color: Colors.black),
-        ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.orange,
+        onPressed: _addNote,
+        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }
