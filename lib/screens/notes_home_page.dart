@@ -272,9 +272,6 @@ class _NotesHomePageState extends State<NotesHomePage> {
                   onRefresh: _refreshData,
                   color: Colors.orange,
                   child: ListView.builder(
-                    physics: const BouncingScrollPhysics(
-                      parent: AlwaysScrollableScrollPhysics(),
-                    ),
                     itemCount: notes.length,
                     itemBuilder: (context, index) {
                       return Hero(
