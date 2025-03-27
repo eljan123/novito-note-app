@@ -26,7 +26,7 @@ class NotesHomePage extends StatefulWidget {
   State<NotesHomePage> createState() => _NotesHomePageState();
 }
 
-class _NotesHomePageState extends State<NotesHomePage> with SingleTickerProviderStateMixin {
+class _NotesHomePageState extends State<NotesHomePage> {
   // Get access to the note service which stores all our data
   final NoteService _noteService = NoteService();
   // Timer used to update the relative timestamps
@@ -158,9 +158,6 @@ class _NotesHomePageState extends State<NotesHomePage> with SingleTickerProvider
             TextButton(
               child: const Text('Delete', style: TextStyle(color: Colors.red)),
               onPressed: () async {
-                // Store the note title before we close the dialog
-                final String noteTitle = noteToDelete.title;
-                
                 // Close the dialog first
                 Navigator.pop(context);
                 
@@ -172,25 +169,6 @@ class _NotesHomePageState extends State<NotesHomePage> with SingleTickerProvider
                 
                 // Update the UI
                 setState(() {});
-                
-                // Show confirmation message
-                if (!mounted) return;
-                
-                final scaffoldMessenger = ScaffoldMessenger.of(context);
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text('Note "$noteTitle" deleted'),
-                    backgroundColor: Colors.red,
-                    duration: const Duration(seconds: 2),
-                    action: SnackBarAction(
-                      label: 'OK',
-                      textColor: Colors.white,
-                      onPressed: () {
-                        scaffoldMessenger.hideCurrentSnackBar();
-                      },
-                    ),
-                  ),
-                );
               },
             ),
           ],
@@ -419,20 +397,10 @@ class _NotesHomePageState extends State<NotesHomePage> with SingleTickerProvider
                   ),
                 ),
       // Add button in the bottom right
-      floatingActionButton: TweenAnimationBuilder(
-        duration: const Duration(milliseconds: 300),
-        tween: Tween<double>(begin: 0.0, end: 1.0),
-        builder: (context, double value, child) {
-          return Transform.scale(
-            scale: value,
-            child: child,
-          );
-        },
-        child: FloatingActionButton(
-          backgroundColor: Colors.orange,
-          onPressed: _addNote,
-          child: const Icon(Icons.add, color: Colors.black),
-        ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.orange,
+        onPressed: _addNote,
+        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }
