@@ -1,0 +1,173 @@
+# NOVITO USER MANUAL
+
+## INTRODUCTION
+
+Welcome to Novito, your personal note-taking and task management companion. This sleek, modern app helps you organize your thoughts, ideas, and to-dos with an intuitive dark-themed interface. This manual will guide you through all the features and functions of Novito.
+
+## TABLE OF CONTENTS
+
+1. Getting Started
+2. Notes Management
+   - Viewing Notes
+   - Creating Notes
+   - Editing Notes
+   - Organizing with Folders
+   - Pinning Important Notes
+   - Deleting Notes
+3. Folder Management
+   - Creating Folders
+   - Viewing Notes by Folder
+   - Renaming Folders
+   - Deleting Folders
+4. To-Do List Management
+   - Viewing Tasks
+   - Adding Tasks
+   - Marking Tasks as Complete
+   - Deleting Tasks
+5. Tips and Tricks
+6. Troubleshooting
+
+## 1. GETTING STARTED
+
+When you first open Novito, you'll see the main notes screen. The app has a sleek dark theme with orange accents for a modern look that's easy on your eyes. The interface has been designed to be intuitive and straightforward.
+
+The app has two main sections:
+- Notes: For creating and managing text notes
+- To-Do List: For tracking tasks you need to complete
+
+You can switch between these sections using the drawer menu, which you can access by tapping the menu icon (☰) in the top-right corner of the screen.
+
+## 2. NOTES MANAGEMENT
+
+### Viewing Notes
+
+- The main screen displays all your notes in a scrollable list
+- Notes are sorted with pinned notes at the top, followed by other notes in order of most recently modified
+- Each note card shows:
+  - Title (in bold)
+  - Content preview (first few lines)
+  - Folder badge (if not in Default folder)
+  - Last modified time in a relative format (e.g., "Just now," "5m ago," "2h ago," "Yesterday")
+- Pull down on the list to refresh and update the notes from storage
+
+### Creating Notes
+
+1. Tap the orange "+" button in the bottom-right corner of the notes screen
+2. Enter a title for your note (required)
+3. Type your note content in the larger text area
+4. (Optional) Tap the folder icon to select or create a folder for the note
+5. Tap the save icon to save your note
+6. The note will appear in the notes list on the main screen
+
+### Editing Notes
+
+1. Tap on any note in the list to open it for editing
+2. Modify the title or content as needed
+3. To change the folder, tap the folder icon at the top
+4. To pin/unpin the note, tap the pin icon
+5. Tap the save icon to save your changes
+6. The note will update with the last modified time
+
+### Organizing with Folders
+
+- Every note belongs to a folder (Default folder is used if none is specified)
+- You can see which folder a note belongs to by the folder badge on the note card
+- To view notes by folder, use the Folders screen (via drawer menu)
+
+### Pinning Important Notes
+
+- To pin a note, tap the pin icon while viewing or editing the note
+- Pinned notes appear at the top of the list with an orange background
+- To unpin, tap the pin icon again
+
+### Deleting Notes
+
+1. To delete a note, tap the trash icon on the note card
+2. A confirmation dialog will appear asking if you're sure
+3. Tap "Delete" to confirm, or "Cancel" to keep the note
+4. Deleted notes cannot be recovered
+
+## 3. FOLDER MANAGEMENT
+
+Folders help you organize your notes by categories or themes. Access the folder view from the drawer menu.
+
+### Creating Folders
+
+1. In the Folder screen, tap the folder icon with a "+" in the top-right corner
+2. Enter a name for your new folder
+3. Tap "Create" to create the folder
+4. The new folder will appear in the horizontal folder list at the top of the screen
+
+### Viewing Notes by Folder
+
+1. In the Folder screen, tap any folder in the horizontal list at the top
+2. The screen will update to show only notes in that folder
+3. The selected folder is highlighted in orange
+
+### Renaming Folders
+
+1. In the Folder screen, long-press on a folder chip in the horizontal list
+2. Tap "Rename Folder" in the menu that appears
+3. Enter the new name for the folder
+4. Tap "Rename" to confirm
+   
+Note: The Default folder cannot be renamed.
+
+### Deleting Folders
+
+1. In the Folder screen, long-press on a folder chip in the horizontal list
+2. Tap "Delete Folder" in the menu that appears
+3. Confirm deletion in the dialog that appears
+4. All notes in the deleted folder will be moved to the Default folder
+
+Note: The Default folder cannot be deleted.
+
+## 4. TO-DO LIST MANAGEMENT
+
+The To-Do List feature helps you keep track of tasks you need to complete.
+
+### Viewing Tasks
+
+- The To-Do List screen shows all your tasks in a scrollable list
+- Completed tasks show a checkmark and have strike-through text
+- Tasks are stored in memory and will be lost when the app is closed
+
+### Adding Tasks
+
+1. Tap the orange "+" button in the bottom-right corner of the To-Do List screen
+2. Enter your task in the text field
+3. Tap the save icon to add the task
+4. The new task will appear in your To-Do List
+
+### Marking Tasks as Complete
+
+- Tap the checkbox next to any task to mark it as complete
+- The task will show a checkmark and strike-through text
+- Tap again to mark as incomplete
+
+### Deleting Tasks
+
+- Tap the trash icon next to any task to delete it
+- The task will be removed immediately
+- Deleted tasks cannot be recovered
+
+## 5. TIPS AND TRICKS
+
+- **Quick Navigation**: Use the drawer menu (☰) to quickly switch between Notes and To-Do List views
+- **Task Organization**: Complete the most important tasks first by adding them at the top of your list
+- **Note Organization**: Use the pin feature for notes you access frequently
+- **Folder Strategy**: Create folders based on projects, topics, or areas of your life for better organization
+- **Regular Cleanup**: Delete completed tasks and outdated notes to keep your lists manageable
+
+## 6. TROUBLESHOOTING
+
+If you encounter issues while using Novito:
+
+- **App Not Responding**: Close the app completely and restart it
+- **Notes Not Saving**: Make sure you've tapped the save icon after creating or editing a note
+- **Missing Notes**: Check if you're viewing the correct folder
+- **Data Loss**: Remember that To-Do items are only stored in memory and will be lost when the app is closed. Notes and folders are stored persistently.
+
+---
+
+Thank you for using Novito! We hope this app helps you stay organized and productive. 
