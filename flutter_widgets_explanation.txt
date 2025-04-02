@@ -1,0 +1,184 @@
+# FLUTTER WIDGETS IN NOVITO APP
+
+This document provides an explanation of the key Flutter widgets used in the Novito note-taking app, categorized by their purpose and functionality.
+
+## STRUCTURAL WIDGETS
+
+### MaterialApp
+The root widget of the Novito app that configures the overall visual theme and navigation.
+- **Usage in Novito**: In `main.dart`, it sets up the dark theme with orange accents and black backgrounds.
+- **Key Properties**: 
+  * `theme`: Defines the dark mode color scheme
+  * `home`: Points to the MainPage as the starting screen
+  * `debugShowCheckedModeBanner: false`: Hides the debug banner in the corner
+
+### Scaffold
+Provides the basic structure for each screen with app bars, bodies, drawers, and floating action buttons.
+- **Usage in Novito**: Used in all screens (MainPage, NotesHomePage, FolderPage, TodoListPage)
+- **Key Features**:
+  * `appBar`: Contains the screen title and menu button
+  * `body`: Holds the main content of each screen
+  * `endDrawer`: Navigation menu that slides in from the right
+  * `floatingActionButton`: The orange "+" button for adding notes/tasks
+
+### StatefulWidget / State
+Used to create widgets that can change their appearance in response to user interaction.
+- **Usage in Novito**: All main screens (NotesHomePage, FolderPage, TodoListPage) are StatefulWidgets
+- **Important Methods**:
+  * `initState()`: Used to initialize data and timers
+  * `setState()`: Updates the UI when data changes
+  * `dispose()`: Cleans up resources (like timers)
+
+## LAYOUT WIDGETS
+
+### Column
+Arranges children vertically in a single column.
+- **Usage in Novito**: Used to structure note cards, folder sections, and form layouts
+- **Key Properties**: `crossAxisAlignment`, `mainAxisAlignment` for positioning
+
+### Row
+Arranges children horizontally in a single row.
+- **Usage in Novito**: Used for note headers, task items, and button arrangements
+- **Examples**: The pin and delete buttons in note cards are arranged in a Row
+
+### Container
+A convenience widget that combines common painting, positioning, and sizing functions.
+- **Usage in Novito**: Used for styling boxes, adding padding, and setting backgrounds
+- **Key Properties**: `padding`, `margin`, `decoration` (for borders, colors, etc.)
+
+### Card
+Creates a material design card with elevation and rounded corners.
+- **Usage in Novito**: Each note and task is displayed as a Card
+- **Key Properties**: 
+  * `color`: Orange for pinned notes, dark gray for regular notes
+  * `shape`: RoundedRectangleBorder with borderRadius for rounded corners
+  * `margin`: Spacing between cards
+
+### Expanded
+Expands a child of a Row or Column to fill available space.
+- **Usage in Novito**: Used in note titles and task descriptions to fill available width
+
+### Center
+Centers its child within itself.
+- **Usage in Novito**: Used for empty states and loading indicators
+
+## INTERACTIVE WIDGETS
+
+### FloatingActionButton
+A circular button that floats above the UI, typically used for primary actions.
+- **Usage in Novito**: The orange "+" button to add new notes or tasks
+- **Properties**: Orange background with black add icon
+
+### IconButton
+A Material design button displaying an icon that reacts to touches.
+- **Usage in Novito**: Used for pin, delete, and menu buttons
+- **Examples**: The trash icons for deleting notes/tasks
+
+### InkWell
+A rectangular area that responds to touch with a ripple effect.
+- **Usage in Novito**: Makes note cards tappable for editing
+
+### GestureDetector
+Detects various gestures like tap, double tap, and long press.
+- **Usage in Novito**: Used for folder chips to detect long presses for folder options
+
+### Checkbox
+A material design checkbox that can be checked or unchecked.
+- **Usage in Novito**: Used in the TodoListPage to mark tasks as complete
+
+### ChoiceChip
+A selectable chip that represents a single choice.
+- **Usage in Novito**: Used for folder selection in the FolderPage
+
+## NAVIGATION WIDGETS
+
+### Navigator
+Manages a stack of pages and provides methods for managing the stack.
+- **Usage in Novito**: Used for navigating between screens
+- **Methods**: `push()` for opening new screens, `pop()` for returning
+
+### Drawer
+A panel that slides in from the side of the screen.
+- **Usage in Novito**: The menu accessed via the menu icon in the top-right corner
+- **Contents**: ListTiles for navigating to different sections (Notes, Folders, To-Do List)
+
+### AlertDialog
+A dialog that interrupts the user with urgent information, a decision, or requires a choice.
+- **Usage in Novito**: For confirmation before deleting notes/folders and creating/renaming folders
+
+### ModalBottomSheet
+A modal that slides up from the bottom of the screen.
+- **Usage in Novito**: Shows folder options when long-pressing a folder
+
+## DATA DISPLAY WIDGETS
+
+### ListView.builder
+Efficiently creates a scrollable list of widgets.
+- **Usage in Novito**: Displays lists of notes, tasks, and folders
+- **Key Properties**: `itemCount`, `itemBuilder` for dynamic list creation
+
+### Text
+Displays styled text.
+- **Usage in Novito**: Used throughout the app for titles, content, and labels
+- **Key Properties**: Custom Poppins font family, various sizes and colors
+
+### Hero
+Creates a hero animation between routes.
+- **Usage in Novito**: Animates note transitions when opening a note for editing
+
+### CircularProgressIndicator
+A spinning circular indicator for showing loading states.
+- **Usage in Novito**: Displayed while notes are loading
+
+## INPUT WIDGETS
+
+### TextField
+Allows users to enter text.
+- **Usage in Novito**: Used for note titles, content, and folder names
+- **Key Properties**: TextEditingController for managing the entered text
+
+### TextEditingController
+Controls a TextField, tracks changes to text entry.
+- **Usage in Novito**: Manages text input for note creation/editing and folder naming
+
+## STYLING AND VISUAL WIDGETS
+
+### Icon
+Displays a graphical icon from a font.
+- **Usage in Novito**: Used throughout the app (add, delete, pin icons, etc.)
+
+### ThemeData
+Defines the visual properties for the entire app.
+- **Usage in Novito**: Sets up the dark theme with black backgrounds and orange accents
+
+### Decoration (BoxDecoration)
+Used to draw a box with specific properties.
+- **Usage in Novito**: Styling folder badges, cards, and containers
+
+## STATE MANAGEMENT
+
+### setState
+Updates the state of a StatefulWidget and triggers a rebuild.
+- **Usage in Novito**: Used to refresh UI after data changes (adding/deleting notes, toggling completion)
+
+### mounted
+A boolean indicating whether the State object is currently in the widget tree.
+- **Usage in Novito**: Checked before calling setState after async operations to prevent errors
+
+### Timer
+Used for periodic or delayed actions.
+- **Usage in Novito**: Updates relative timestamps every minute in the NotesHomePage
+
+## SPECIAL FEATURES
+
+### RefreshIndicator
+Implements the swipe-to-refresh pattern.
+- **Usage in Novito**: Allows users to pull down to refresh notes in NotesHomePage
+
+### BouncingScrollPhysics
+Provides a bouncing effect when scrolling past the edge.
+- **Usage in Novito**: Used in ListView for a more interactive scrolling experience
+
+### TextDecoration.lineThrough
+Adds a line through text.
+- **Usage in Novito**: Applied to completed tasks in the TodoListPage 
