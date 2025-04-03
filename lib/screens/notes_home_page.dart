@@ -10,7 +10,7 @@ import 'dart:async';
 // It lets users:
 // 1. See all their notes in one place
 // 2. Add new notes
-// 3. Edit, pin, and delete notes 
+// 3. Edit, pin, and delete notes
 // 4. See which folder each note belongs to
 //
 // KEY CONCEPTS:
@@ -39,7 +39,7 @@ class _NotesHomePageState extends State<NotesHomePage> {
     super.initState();
     // Refresh data when page loads
     _refreshData();
-    
+
     // Update the UI every minute to refresh relative timestamps
     _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
       setState(() {});
@@ -51,13 +51,11 @@ class _NotesHomePageState extends State<NotesHomePage> {
     setState(() {
       _isLoading = true;
     });
-    
+
     // Wait for data to refresh
     await _noteService.refreshData();
-    
-    // Check if widget is still mounted before updating state
     if (!mounted) return;
-    
+
     setState(() {
       _isLoading = false;
     });
@@ -77,18 +75,18 @@ class _NotesHomePageState extends State<NotesHomePage> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => NoteAddPage(
-          onAdd: (Note newNote) async {
-            await _noteService.addNote(newNote);
-            // No setState here, we'll handle refresh when returning
-          },
-        ),
+        builder:
+            (context) => NoteAddPage(
+              onAdd: (Note newNote) async {
+                await _noteService.addNote(newNote);
+              },
+            ),
       ),
     );
-    
+
     // Check if the widget is still in the tree before using setState
     if (!mounted) return;
-    
+
     // Refresh the notes list after returning
     setState(() {});
   }
@@ -100,20 +98,20 @@ class _NotesHomePageState extends State<NotesHomePage> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => NoteEditPage(
-          note: currentNote,
-          index: index,
-          onSave: (int idx, Note updatedNote) async {
-            await _noteService.editNote(idx, updatedNote);
-            // No setState here, we'll handle refresh when returning
-          },
-        ),
+        builder:
+            (context) => NoteEditPage(
+              note: currentNote,
+              index: index,
+              onSave: (int idx, Note updatedNote) async {
+                await _noteService.editNote(idx, updatedNote);
+              },
+            ),
       ),
     );
-    
+
     // Check if the widget is still in the tree before using setState
     if (!mounted) return;
-    
+
     // Refresh the notes list after returning
     setState(() {});
   }
@@ -121,10 +119,10 @@ class _NotesHomePageState extends State<NotesHomePage> {
   // Function to toggle pin status
   void _togglePinStatus(int index) async {
     await _noteService.togglePinStatus(index);
-    
+
     // Check if widget is still mounted before updating state
     if (!mounted) return;
-    
+
     setState(() {}); // Refresh the UI
   }
 
@@ -133,7 +131,7 @@ class _NotesHomePageState extends State<NotesHomePage> {
     // Get the actual note to display its title
     Note noteToDelete = _noteService.getNotes()[index];
     final currentContext = context;
-    
+
     // Show confirmation dialog before deleting
     showDialog(
       context: currentContext,
@@ -160,13 +158,13 @@ class _NotesHomePageState extends State<NotesHomePage> {
               onPressed: () async {
                 // Close the dialog first
                 Navigator.pop(context);
-                
+
                 // Delete the note
                 await _noteService.deleteNote(index);
-                
+
                 // Check if the widget is still in the tree before using BuildContext
                 if (!mounted) return;
-                
+
                 // Update the UI
                 setState(() {});
               },
@@ -206,14 +204,14 @@ class _NotesHomePageState extends State<NotesHomePage> {
   Widget build(BuildContext context) {
     // Get all notes from the service
     List<Note> notes = _noteService.getNotes();
-    
+
     // Sort the notes: pinned notes first, then by most recent
     notes.sort((a, b) {
       if (a.isPinned && !b.isPinned) return -1;
       if (!a.isPinned && b.isPinned) return 1;
       return b.lastModified.compareTo(a.lastModified); // Most recent first
     });
-    
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -223,7 +221,7 @@ class _NotesHomePageState extends State<NotesHomePage> {
             fontFamily: 'Poppins',
             fontSize: 30,
             fontWeight: FontWeight.w600,
-            color: Colors.white, 
+            color: Colors.white,
           ),
         ),
         // Only menu button
@@ -237,162 +235,207 @@ class _NotesHomePageState extends State<NotesHomePage> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: Colors.orange,
-              ),
-            )
-          : notes.isEmpty
+      body:
+          _isLoading
+              ? const Center(
+                child: CircularProgressIndicator(color: Colors.orange),
+              )
+              : notes.isEmpty
               // Empty state - show a helpful message when there are no notes
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.note_add_outlined,
-                        size: 64,
-                        color: Colors.white.withAlpha(179),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.note_add_outlined,
+                      size: 64,
+                      color: Colors.white.withAlpha(179),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No notes yet.\nTap the + button to add one.',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 16,
+                        color: Colors.white,
                       ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'No notes yet.\nTap the + button to add one.',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 16,
-                          color: Colors.white
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                )
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              )
               // Note list - show all notes in a scrollable list
               : RefreshIndicator(
-                  onRefresh: _refreshData,
-                  color: Colors.orange,
-                  child: ListView.builder(
-                    itemCount: notes.length,
-                    itemBuilder: (context, index) {
-                      return Hero(
-                        tag: 'note_${notes[index].title}_${notes[index].id}',
-                        child: Material(
-                          type: MaterialType.transparency,
-                          child: Card(
-                            color: notes[index].isPinned ? Colors.orange : const Color(0xFF212121),
-                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(15),
-                              onTap: () => _editNote(index),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Note header row with title, folder badge, and action buttons
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            notes[index].title,
-                                            style: TextStyle(
-                                              fontFamily: 'Poppins',
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w600,
-                                              color: notes[index].isPinned ? Colors.black : Colors.white,
-                                            ),
+                onRefresh: _refreshData,
+                color: Colors.orange,
+                child: ListView.builder(
+                  itemCount: notes.length,
+                  itemBuilder: (context, index) {
+                    return Hero(
+                      tag: 'note_${notes[index].title}_${notes[index].id}',
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: Card(
+                          color:
+                              notes[index].isPinned
+                                  ? Colors.orange
+                                  : const Color(0xFF212121),
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(15),
+                            onTap: () => _editNote(index),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Note header row with title, folder badge, and action buttons
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          notes[index].title,
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                            color:
+                                                notes[index].isPinned
+                                                    ? Colors.black
+                                                    : Colors.white,
                                           ),
-                                        ),
-                                        // Show folder indicator badge if not in Default folder
-                                        if (notes[index].folder != 'Default') ...[
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: notes[index].isPinned ? Colors.black12 : Colors.orange.withAlpha(51),
-                                              borderRadius: BorderRadius.circular(10),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.folder,
-                                                  size: 14,
-                                                  color: notes[index].isPinned ? Colors.black54 : Colors.orange,
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  notes[index].folder,
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: notes[index].isPinned ? Colors.black54 : Colors.orange,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                        ],
-                                        // Pin button
-                                        IconButton(
-                                          icon: Icon(
-                                            notes[index].isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                                            color: notes[index].isPinned ? Colors.black : Colors.white70,
-                                            size: 22,
-                                          ),
-                                          tooltip: notes[index].isPinned ? 'Unpin' : 'Pin to top',
-                                          onPressed: () => _togglePinStatus(index),
-                                        ),
-                                        // Delete button
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.delete,
-                                            color: notes[index].isPinned ? Colors.black54 : Colors.red,
-                                            size: 22,
-                                          ),
-                                          tooltip: 'Delete note',
-                                          onPressed: () => _deleteNote(index),
-                                        ),
-                                      ],
-                                    ),
-                                    // Note content preview (if there is content)
-                                    if (notes[index].content.isNotEmpty) ...[
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        notes[index].content,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontSize: 14,
-                                          height: 1.3,
-                                          color: notes[index].isPinned ? Colors.black54 : Colors.white70,
                                         ),
                                       ),
+                                      // Show folder indicator badge if not in Default folder
+                                      if (notes[index].folder != 'Default') ...[
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                notes[index].isPinned
+                                                    ? Colors.black12
+                                                    : Colors.orange.withAlpha(
+                                                      51,
+                                                    ),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.folder,
+                                                size: 14,
+                                                color:
+                                                    notes[index].isPinned
+                                                        ? Colors.black54
+                                                        : Colors.orange,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                notes[index].folder,
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color:
+                                                      notes[index].isPinned
+                                                          ? Colors.black54
+                                                          : Colors.orange,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                      ],
+                                      // Pin button
+                                      IconButton(
+                                        icon: Icon(
+                                          notes[index].isPinned
+                                              ? Icons.push_pin
+                                              : Icons.push_pin_outlined,
+                                          color:
+                                              notes[index].isPinned
+                                                  ? Colors.black
+                                                  : Colors.white70,
+                                          size: 22,
+                                        ),
+                                        tooltip:
+                                            notes[index].isPinned
+                                                ? 'Unpin'
+                                                : 'Pin to top',
+                                        onPressed:
+                                            () => _togglePinStatus(index),
+                                      ),
+                                      // Delete button
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.delete,
+                                          color:
+                                              notes[index].isPinned
+                                                  ? Colors.black54
+                                                  : Colors.red,
+                                          size: 22,
+                                        ),
+                                        tooltip: 'Delete note',
+                                        onPressed: () => _deleteNote(index),
+                                      ),
                                     ],
-                                    // Last modified timestamp
-                                    const SizedBox(height: 8),
+                                  ),
+                                  // Note content preview (if there is content)
+                                  if (notes[index].content.isNotEmpty) ...[
+                                    const SizedBox(height: 6),
                                     Text(
-                                      'Last modified: ${_formatDateTime(notes[index].lastModified)}',
+                                      notes[index].content,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         fontFamily: 'Poppins',
-                                        fontSize: 11,
-                                        color: notes[index].isPinned ? Colors.black38 : Colors.white38,
-                                        fontStyle: FontStyle.italic,
+                                        fontSize: 14,
+                                        height: 1.3,
+                                        color:
+                                            notes[index].isPinned
+                                                ? Colors.black54
+                                                : Colors.white70,
                                       ),
                                     ),
                                   ],
-                                ),
+                                  // Last modified timestamp
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Last modified: ${_formatDateTime(notes[index].lastModified)}',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 11,
+                                      color:
+                                          notes[index].isPinned
+                                              ? Colors.black38
+                                              : Colors.white38,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
+              ),
       // Add button in the bottom right
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.orange,
@@ -401,4 +444,4 @@ class _NotesHomePageState extends State<NotesHomePage> {
       ),
     );
   }
-} 
+}
