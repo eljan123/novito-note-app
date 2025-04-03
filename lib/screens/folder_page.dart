@@ -40,7 +40,7 @@ class _FolderPageState extends State<FolderPage> {
   void _addFolder() async {
     final TextEditingController folderNameController = TextEditingController();
     final capturedContext = context;
-    
+
     await showDialog<void>(
       context: capturedContext,
       builder: (dialogContext) {
@@ -70,7 +70,9 @@ class _FolderPageState extends State<FolderPage> {
               onPressed: () {
                 if (folderNameController.text.isNotEmpty) {
                   // Create folder and close dialog - no async operation inside dialog
-                  _noteService.addFolder(Folder(name: folderNameController.text));
+                  _noteService.addFolder(
+                    Folder(name: folderNameController.text),
+                  );
                   Navigator.pop(dialogContext);
                 }
               },
@@ -79,12 +81,12 @@ class _FolderPageState extends State<FolderPage> {
         );
       },
     );
-    
+
     // UI update after dialog is closed
     if (!mounted) return;
     setState(() {});
   }
-  
+
   // Delete a folder after confirmation
   void _deleteFolder(String folderName) {
     // Can't delete Default folder - add a friendly check
@@ -95,7 +97,7 @@ class _FolderPageState extends State<FolderPage> {
 
     // Store the BuildContext in a local variable before async operation
     final buildContext = context;
-    
+
     // Confirm before deleting
     showDialog<void>(
       context: buildContext,
@@ -122,13 +124,11 @@ class _FolderPageState extends State<FolderPage> {
               onPressed: () async {
                 // Close dialog first using the captured context
                 Navigator.pop(dialogContext);
-                
-                // Do the actual deletion
                 await _noteService.deleteFolder(folderName);
-                
+
                 // Check if widget is still mounted before updating UI
                 if (!mounted) return;
-                
+
                 // Update the UI
                 setState(() {
                   if (_selectedFolder == folderName) {
@@ -149,7 +149,7 @@ class _FolderPageState extends State<FolderPage> {
       // Can't modify Default folder - just return silently
       return;
     }
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF303030),
@@ -209,11 +209,13 @@ class _FolderPageState extends State<FolderPage> {
       },
     );
   }
-  
+
   // Show dialog to rename a folder
   void _renameFolderDialog(Folder folder) {
-    final TextEditingController folderNameController = TextEditingController(text: folder.name);
-    
+    final TextEditingController folderNameController = TextEditingController(
+      text: folder.name,
+    );
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -242,11 +244,15 @@ class _FolderPageState extends State<FolderPage> {
                   hintStyle: TextStyle(color: Colors.white70),
                   // Add a border for better visibility
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                 ),
                 // Auto-focus the text field and select all text
                 autofocus: true,
-                onSubmitted: (_) => _performRename(folder, folderNameController.text),
+                onSubmitted:
+                    (_) => _performRename(folder, folderNameController.text),
               ),
             ],
           ),
@@ -259,14 +265,15 @@ class _FolderPageState extends State<FolderPage> {
             ),
             TextButton(
               child: const Text('Rename'),
-              onPressed: () => _performRename(folder, folderNameController.text),
+              onPressed:
+                  () => _performRename(folder, folderNameController.text),
             ),
           ],
         );
       },
     );
   }
-  
+
   // Helper method to perform the actual rename operation
   void _performRename(Folder folder, String newName) async {
     // Handle empty name
@@ -274,13 +281,13 @@ class _FolderPageState extends State<FolderPage> {
       Navigator.pop(context);
       return;
     }
-    
+
     // Handle same name
     if (newName == folder.name) {
       Navigator.pop(context);
       return;
     }
-    
+
     // Check if a folder with this name already exists
     bool folderExists = false;
     for (var existingFolder in _noteService.getFolders()) {
@@ -289,40 +296,43 @@ class _FolderPageState extends State<FolderPage> {
         break;
       }
     }
-    
+
     if (folderExists) {
       Navigator.pop(context);
       return;
     }
-    
+
     // Save old folder name in case we need it later
     final String oldFolderName = folder.name;
-    
+
     // Close the dialog first
     Navigator.pop(context);
-    
+
     // All checks passed, do the rename
     // Create new folder with new name
     final newFolder = Folder(name: newName);
     await _noteService.addFolder(newFolder);
-    
+
     // Get notes from old folder
     List<Note> notes = _noteService.getNotesByFolder(oldFolderName);
-    
+
     // Move notes to new folder - done one by one to ensure database updates
     for (var note in notes) {
       note.folder = newName;
       if (note.id != null) {
-        await _noteService.editNote(_noteService.getNotes().indexOf(note), note);
+        await _noteService.editNote(
+          _noteService.getNotes().indexOf(note),
+          note,
+        );
       }
     }
-    
+
     // Delete old folder
     await _noteService.deleteFolder(oldFolderName);
-    
+
     // Check if widget is still mounted
     if (!mounted) return;
-    
+
     // Update selected folder if needed
     setState(() {
       if (_selectedFolder == oldFolderName) {
@@ -339,19 +349,20 @@ class _FolderPageState extends State<FolderPage> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => NoteAddPage(
-          onAdd: (Note newNote) async {
-            // Make sure it's added to the current folder
-            newNote.folder = _selectedFolder;
-            await _noteService.addNote(newNote);
-          },
-        ),
+        builder:
+            (context) => NoteAddPage(
+              onAdd: (Note newNote) async {
+                // Make sure it's added to the current folder
+                newNote.folder = _selectedFolder;
+                await _noteService.addNote(newNote);
+              },
+            ),
       ),
     );
-    
+
     // Check if widget is still mounted before updating state
     if (!mounted) return;
-    
+
     // Refresh UI
     setState(() {});
   }
@@ -361,19 +372,20 @@ class _FolderPageState extends State<FolderPage> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => NoteEditPage(
-          note: note,
-          index: index,
-          onSave: (int idx, Note updatedNote) async {
-            await _noteService.editNote(idx, updatedNote);
-          },
-        ),
+        builder:
+            (context) => NoteEditPage(
+              note: note,
+              index: index,
+              onSave: (int idx, Note updatedNote) async {
+                await _noteService.editNote(idx, updatedNote);
+              },
+            ),
       ),
     );
-    
+
     // Check if widget is still mounted before updating state
     if (!mounted) return;
-    
+
     // Refresh UI
     setState(() {});
   }
@@ -381,10 +393,10 @@ class _FolderPageState extends State<FolderPage> {
   // Function to toggle pin status
   void _togglePinStatus(int index) async {
     await _noteService.togglePinStatus(index);
-    
+
     // Check if widget is still mounted before updating state
     if (!mounted) return;
-    
+
     setState(() {});
   }
 
@@ -392,10 +404,10 @@ class _FolderPageState extends State<FolderPage> {
   void _deleteNote(int index) {
     // Get the actual note to display its title
     Note noteToDelete = _noteService.getNotes()[index];
-    
+
     // Store the BuildContext in a local variable before async operation
     final buildContext = context;
-    
+
     // Show confirmation dialog
     showDialog<void>(
       context: buildContext,
@@ -422,13 +434,13 @@ class _FolderPageState extends State<FolderPage> {
               onPressed: () async {
                 // Close dialog first using the captured context
                 Navigator.pop(dialogContext);
-                
+
                 // Delete the note
                 await _noteService.deleteNote(index);
-                
+
                 // Check if widget is still mounted before updating UI
                 if (!mounted) return;
-                
+
                 // Update UI
                 setState(() {});
               },
@@ -439,7 +451,7 @@ class _FolderPageState extends State<FolderPage> {
     );
   }
 
-  // HELPER METHOD - Format dates in a human-readable way  
+  // HELPER METHOD - Format dates in a human-readable way
   String _formatDateTime(DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
@@ -466,14 +478,14 @@ class _FolderPageState extends State<FolderPage> {
     // Get data we need to display
     List<Folder> folders = _noteService.getFolders();
     List<Note> notes = _noteService.getNotesByFolder(_selectedFolder);
-    
+
     // Sort notes - pinned first, then by most recent
     notes.sort((a, b) {
       if (a.isPinned && !b.isPinned) return -1;
       if (!a.isPinned && b.isPinned) return 1;
       return b.lastModified.compareTo(a.lastModified); // Most recent first
     });
-    
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -483,12 +495,15 @@ class _FolderPageState extends State<FolderPage> {
             fontFamily: 'Poppins',
             fontSize: 24,
             fontWeight: FontWeight.w600,
-            color: Colors.white, 
+            color: Colors.white,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.create_new_folder_outlined, color: Colors.orange),
+            icon: const Icon(
+              Icons.create_new_folder_outlined,
+              color: Colors.orange,
+            ),
             onPressed: _addFolder,
           ),
           IconButton(
@@ -553,119 +568,153 @@ class _FolderPageState extends State<FolderPage> {
               ],
             ),
           ),
-          
+
           // BOTTOM SECTION: List of notes in selected folder
           Expanded(
-            child: notes.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.note_add_outlined,
-                          size: 64,
-                          color: Colors.white.withValues(alpha: 0.7),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No notes in "$_selectedFolder" folder.\nTap the + button to add one.',
-                          style: const TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 16,
-                            color: Colors.white
+            child:
+                notes.isEmpty
+                    ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.note_add_outlined,
+                            size: 64,
+                            color: Colors.white.withValues(alpha: 0.7),
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: notes.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        color: notes[index].isPinned ? Colors.orange : const Color(0xFF212121),
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(15),
-                          onTap: () => _editNote(
-                            _noteService.getNotes().indexOf(notes[index]), 
-                            notes[index]
+                          const SizedBox(height: 16),
+                          Text(
+                            'No notes in "$_selectedFolder" folder.\nTap the + button to add one.',
+                            style: const TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        notes[index].title,
-                                        style: TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                          color: notes[index].isPinned ? Colors.black : Colors.white,
+                        ],
+                      ),
+                    )
+                    : ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: notes.length,
+                      itemBuilder: (context, index) {
+                        return Card(
+                          color:
+                              notes[index].isPinned
+                                  ? Colors.orange
+                                  : const Color(0xFF212121),
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(15),
+                            onTap:
+                                () => _editNote(
+                                  _noteService.getNotes().indexOf(notes[index]),
+                                  notes[index],
+                                ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          notes[index].title,
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                            color:
+                                                notes[index].isPinned
+                                                    ? Colors.black
+                                                    : Colors.white,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    IconButton(
-                                      icon: Icon(
-                                        notes[index].isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                                        color: notes[index].isPinned ? Colors.black : Colors.white70,
-                                        size: 22,
+                                      IconButton(
+                                        icon: Icon(
+                                          notes[index].isPinned
+                                              ? Icons.push_pin
+                                              : Icons.push_pin_outlined,
+                                          color:
+                                              notes[index].isPinned
+                                                  ? Colors.black
+                                                  : Colors.white70,
+                                          size: 22,
+                                        ),
+                                        onPressed:
+                                            () => _togglePinStatus(
+                                              _noteService.getNotes().indexOf(
+                                                notes[index],
+                                              ),
+                                            ),
                                       ),
-                                      onPressed: () => _togglePinStatus(
-                                        _noteService.getNotes().indexOf(notes[index])
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.delete,
+                                          color:
+                                              notes[index].isPinned
+                                                  ? Colors.black54
+                                                  : Colors.red,
+                                          size: 22,
+                                        ),
+                                        onPressed:
+                                            () => _deleteNote(
+                                              _noteService.getNotes().indexOf(
+                                                notes[index],
+                                              ),
+                                            ),
                                       ),
-                                    ),
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.delete,
-                                        color: notes[index].isPinned ? Colors.black54 : Colors.red,
-                                        size: 22,
-                                      ),
-                                      onPressed: () => _deleteNote(
-                                        _noteService.getNotes().indexOf(notes[index])
+                                    ],
+                                  ),
+                                  if (notes[index].content.isNotEmpty) ...[
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      notes[index].content,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: 14,
+                                        height: 1.3,
+                                        color:
+                                            notes[index].isPinned
+                                                ? Colors.black54
+                                                : Colors.white70,
                                       ),
                                     ),
                                   ],
-                                ),
-                                if (notes[index].content.isNotEmpty) ...[
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 8),
                                   Text(
-                                    notes[index].content,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
+                                    'Last modified: ${_formatDateTime(notes[index].lastModified)}',
                                     style: TextStyle(
                                       fontFamily: 'Poppins',
-                                      fontSize: 14,
-                                      height: 1.3,
-                                      color: notes[index].isPinned ? Colors.black54 : Colors.white70,
+                                      fontSize: 11,
+                                      color:
+                                          notes[index].isPinned
+                                              ? Colors.black38
+                                              : Colors.white38,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                 ],
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Last modified: ${_formatDateTime(notes[index].lastModified)}',
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 11,
-                                    color: notes[index].isPinned ? Colors.black38 : Colors.white38,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    ),
           ),
         ],
       ),
@@ -676,4 +725,4 @@ class _FolderPageState extends State<FolderPage> {
       ),
     );
   }
-} 
+}
